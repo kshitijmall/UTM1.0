@@ -17,7 +17,6 @@ Usage
 -----
 
 To run the code the user needs to use the following steps. These steps would be updated shortly.
-
 ::
   $ startup.m
 
