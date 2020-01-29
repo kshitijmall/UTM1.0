@@ -33,6 +33,7 @@ Aknowledgements
 ---------------
 
 `AAE 590 Hypersonics & Design <https://engineering.purdue.edu/~mjgrant/syllabus-2.pdf>`_ by Professor Michael Grant
+
 `AAE 508 Optimization in Aerospace Engineering <https://engineering.purdue.edu/online/sites/default/files/documents/syllabi/f2015_aae508.pdf>`_ by Professor James Longuski
 
 .. Local Variables:
