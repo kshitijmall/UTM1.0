@@ -25,24 +25,24 @@ Use the following steps to setup and run a sample Mars aerocapture problem with 
 
 **Step 2:** Run the following step using MATLAB's command line. 
 ::
-  $ startup.m
+  $ startup
 
 This startup file adds library files to the search path. 
 
 **Step 3:** Step 2 would automatically take you to the *problems* folder. Browse to the *Non-Linear Control Constraints Problems* and then to the *Mars_Aerocapture*. In the command window type 
 ::
-  $ runSolver.m
+  $ runSolver
 
 **Step 4:** Step 3 would create the *autocode* and *data* folders if they are not already present in the current working space. Once all the numerical continuation steps are solved, the results are save as **results.mat** inside the *data* folder. To visualize the results you have two options. 
 **Step 4 a:** Run through MATLAB's command window
 ::
-  $ runAnalysis.m
+  $ runAnalysis
 
 Please make sure to check and modify *in.cont.index* inside the file **inputsAnalyzeOptimization.m**, which corresponds to the continuation set in the solution process. For instance, if you want to see the results of the continuation set 2 just set in.cont.index = 2.
 
 **Step 4 b:** Run through MATLAB's command window the following comparison file to see the validity of the results obtained using the UTM with GPOPS-II. 
 ::
-  $ bounded_control_comp_plots.m
+  $ bounded_control_comp_plots
   
 
 Setting Up a Sample Problem
