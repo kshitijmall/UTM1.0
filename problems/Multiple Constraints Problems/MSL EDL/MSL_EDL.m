@@ -11,7 +11,7 @@ function [in] = MSL_EDL()
 %% Execution Control %%
 %%%%%%%%%%%%%%%%%%%%%%%
 
-in.oc.writeEquations = true; % Determine if we need to regenerate the equation files
+in.oc.writeEquations = false; % Determine if we need to regenerate the equation files
 
 %%%%%%%%%%%%%
 %% Scaling %%
@@ -60,7 +60,7 @@ L = ['(1/2*',rho,'*v^2*Cd*LbyD*Aref)']; % Lift Force
 % 3D
 Ft = D; % Force along velocity vector
 Fn = L; % Force perpendicular to velocity vector
-control = '(0.683*sin(sigmaaactrl) + 0.183)';
+control = '(0.683*sin(MSLctrl) + 0.183)';
 
 in.oc.stateRate = {'v*sin(gam)'; ...
                    ['-',Ft,'/mass - muu*sin(gam)/(rm + h)^2']; ...
@@ -70,7 +70,7 @@ in.oc.stateRate = {'v*sin(gam)'; ...
 %% Control %%
 %%%%%%%%%%%%%
 
-in.oc.control             = {'sigmaaactrl','rad'}; % angle of attack control
+in.oc.control             = {'MSLctrl','rad'}; % angle of attack control
 in.oc.assumptions.control = ''; % assumptions for Mathematica when solving for control
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,9 +81,11 @@ gload = ['(sqrt(',L,'^2 + ',D,'^2)/(mass*g))'];
 q     = ['(0.5*',rho,'*v^2)'];
 Q     = ['(k*sqrt(',rho,'/rn)*v^3)'];
 
-in.oc.cost.path     = {['epsq*sec(0.5*pi*(',q,')/qmax) + epsg*sec(0.5*pi*(',gload,')/gmax) + epsQ*sec(0.5*pi*(',Q,')/Qmax)'],'m/s'};
+% % For control constraint only
+% in.oc.cost.path     = {'epsilon*cos(MSLctrl)','m/s'};
 
-% in.oc.cost.path     = {'epsc*cos(sigmaaactrl)','m/s'};
+% For control and state path constraint
+in.oc.cost.path     = {['epsilon*cos(MSLctrl) + epsq*sec(0.5*pi*(',q,')/qmax) + epsg*sec(0.5*pi*(',gload,')/gmax) + epsQ*sec(0.5*pi*(',Q,')/Qmax)'],'m/s'};
 
 % Terminal cost
 in.oc.cost.terminal = {'-h','m'};
@@ -116,6 +118,7 @@ in.const.mass    = {3300,'kg'}; % Mass of vehicle
 in.const.Aref    = {15.9,'m^2'}; % Reference area of vehicle
 in.const.rn      = {0.6,'m'}; % Nose radius 
 in.const.k       = {1.9027e-4,'sqrt(kg)/m^2'}; % heat rate coefficient
+in.const.epsilon = {1,'m/s'}; % scaling factor for smoothed bang-bang control
 in.const.epsQ    = {1,'m/s'}; % scaling factor for smoothed bang-bang control
 in.const.epsg    = {1,'m/s'}; % scaling factor for smoothed bang-bang control
 in.const.epsq    = {1,'m/s'}; % scaling factor for smoothed bang-bang control
@@ -127,7 +130,7 @@ in.const.qmax    = {100e3, 'kg/(m*s^2)'};
 in.const.g       = {9.81, 'm/s^2'};
 in.const.umin    = {cosd(120), 'nd'};
 in.const.umax    = {cosd(30), 'nd'};
-in.const.tol     = {1e-6,'nd'}; 
+in.const.tol     = {1e-4,'nd'}; 
 in.const.NMax    = {1e13,'nd'}; 
 
 %%%%%%%%%%%%%%%%%%%
@@ -156,7 +159,7 @@ ind = 0;
 % Continuation Set %%
 %%%%%%%%%%%%%%%%%%%%%
 ind = ind+1;
-in.CONT{ind}.numCases = 500;
+in.CONT{ind}.numCases = 50;
 in.CONT{ind}.constraint.terminal.v = 540; 
 in.CONT{ind}.constraint.initial.h = 125000; 
 
@@ -164,43 +167,29 @@ in.CONT{ind}.constraint.initial.h = 125000;
 % Continuation Set %%
 %%%%%%%%%%%%%%%%%%%%%
 ind = ind+1;
-in.CONT{ind}.numCases = 50;
-in.CONT{ind}.const.epsc = linspace(0,-(1-1e-4),in.CONT{ind}.numCases);
-
-%%%%%%%%%%%%%%%%%%%%%
-% Continuation Set %%
-%%%%%%%%%%%%%%%%%%%%%
-ind = ind+1;
 in.CONT{ind}.numCases = 100;
-in.CONT{ind}.const.epsc = linspace(0,-(1e-4-1e-6),in.CONT{ind}.numCases);
-
-%%%%%%%%%%%%%%%%%%%%%
-% Continuation Set %%
-%%%%%%%%%%%%%%%%%%%%%
-ind = ind+1;
-in.CONT{ind}.numCases = 500;
 in.CONT{ind}.const.Qmax = linspace(0,-(200e4-70e4),in.CONT{ind}.numCases);
 % 
 %%%%%%%%%%%%%%%%%%%%%
 % Continuation Set %%
 %%%%%%%%%%%%%%%%%%%%%
 ind = ind+1;
-in.CONT{ind}.numCases = 500;
+in.CONT{ind}.numCases = 100;
 in.CONT{ind}.const.gmax = linspace(0,-(50-5),in.CONT{ind}.numCases);
 % 
 %%%%%%%%%%%%%%%%%%%%%
 % Continuation Set %%
 %%%%%%%%%%%%%%%%%%%%%
 ind = ind+1;
-in.CONT{ind}.numCases = 500;
+in.CONT{ind}.numCases = 100;
 in.CONT{ind}.const.qmax = linspace(0,-(100e3-10e3),in.CONT{ind}.numCases);
 
 %%%%%%%%%%%%%%%%%%%%%
 % Continuation Set %%
 %%%%%%%%%%%%%%%%%%%%%
 ind = ind+1;
-in.CONT{ind}.numCases = 500;
-in.CONT{ind}.const.epsc = linspace(0,-(1-1e-4),in.CONT{ind}.numCases);
+in.CONT{ind}.numCases = 300;
+in.CONT{ind}.const.epsilon = linspace(0,-(1-1e-4),in.CONT{ind}.numCases);
 in.CONT{ind}.const.epsQ = linspace(0,-(1-1e-2),in.CONT{ind}.numCases);
 in.CONT{ind}.const.epsg = linspace(0,-(1-1e-2),in.CONT{ind}.numCases);
 in.CONT{ind}.const.epsq = linspace(0,-(1-1e-2),in.CONT{ind}.numCases);
@@ -210,9 +199,10 @@ in.CONT{ind}.const.epsq = linspace(0,-(1-1e-2),in.CONT{ind}.numCases);
 %%%%%%%%%%%%%%%%%%%%%
 ind = ind+1;
 in.CONT{ind}.numCases = 1000;
-in.CONT{ind}.const.epsc = linspace(0,-(1e-4-1e-6),in.CONT{ind}.numCases);
+in.CONT{ind}.const.epsilon = linspace(0,-(1e-4-1e-6),in.CONT{ind}.numCases);
 in.CONT{ind}.const.epsQ = linspace(0,-(1e-2-1e-6),in.CONT{ind}.numCases);
 in.CONT{ind}.const.epsg = linspace(0,-(1e-2-1e-6),in.CONT{ind}.numCases);
 in.CONT{ind}.const.epsq = linspace(0,-(1e-2-1e-6),in.CONT{ind}.numCases);
+in.CONT{ind}.const.tol = linspace(0,-(1e-4-1e-6),in.CONT{ind}.numCases);
 
 return
