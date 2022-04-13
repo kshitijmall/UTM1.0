@@ -3,7 +3,7 @@ Unified Trigonometrization Method Version 1.0
 ==============================================================
 
 :Author: Kshitij Mall
-:Contact: mall@auburn.edu
+:Contact: mall@purdue.edu
 :URL: https://github.com/kshitijmall/UTM1.0
 
 
